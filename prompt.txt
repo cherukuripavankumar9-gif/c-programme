@@ -1,0 +1,18 @@
+**Professional Prompt for Generating the Program**
+
+Develop a menu-driven graphics drawing application in C that simulates a basic computer graphics environment using a 2D character matrix. The drawing canvas should consist of 20 rows and 40 columns and be represented using a two-dimensional character array.
+
+The application must provide the following functionalities:
+
+1. Initialize and clear the drawing canvas with a default background character ('_').
+2. Display the current contents of the canvas on the console.
+3. Draw a rectangle by accepting the top-left coordinate, height, and width as input.
+4. Draw horizontal and vertical lines by specifying the starting and ending coordinates.
+5. Draw an isosceles triangle by providing the apex position and height.
+6. Draw a circle using the center coordinates and radius based on a mathematical distance calculation.
+7. Implement a user-friendly menu interface that allows repeated drawing operations until the user selects the exit option.
+8. Use modular programming principles by implementing separate functions for each drawing operation.
+9. Store all graphical objects directly in the character matrix and render them using the '*' symbol.
+10. Ensure efficient memory usage and maintain clear program structure with appropriate comments.
+
+The final output should visually display the shapes within the character grid, allowing multiple shapes to coexist on the same canvas until it is cleared.
