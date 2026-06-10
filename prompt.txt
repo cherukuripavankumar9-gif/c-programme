@@ -1,4 +1,4 @@
-**Professional Prompt for Generating the Program**
+ Prompt for Generating the Program
 
 Develop a menu-driven graphics drawing application in C that simulates a basic computer graphics environment using a 2D character matrix. The drawing canvas should consist of 20 rows and 40 columns and be represented using a two-dimensional character array.
 
