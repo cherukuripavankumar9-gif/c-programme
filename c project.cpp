@@ -1,159 +1,201 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 
-#define R 20
-#define C 40
+#define WIDTH 80
+#define HEIGHT 24
 
-char a[R][C];
+#define EMPTY '_'
+#define PIXEL '*'
 
-void clear()
-{
-    int i,j;
+char picture[HEIGHT][WIDTH];
 
-    for(i=0;i<R;i++)
-        for(j=0;j<C;j++)
-            a[i][j]='_';
+void clearPicture() {
+    /*
+        TODO:
+        Fill the entire 2D array picture with EMPTY character '_'.
+    */
+    int i, j;
+
+    for (i = 0; i < HEIGHT; i++) {
+        for (j = 0; j < WIDTH; j++) {
+            picture[i][j] = EMPTY;
+        }
+    }
 }
 
-void show()
-{
-    int i,j;
+void displayPicture() {
+    /*
+        TODO:
+        Print the 2D picture array row by row.
+    */
+    int i, j;
 
-    for(i=0;i<R;i++)
-    {
-        for(j=0;j<C;j++)
-            printf("%c",a[i][j]);
+    for (i = 0; i < HEIGHT; i++) {
+        for (j = 0; j < WIDTH; j++) {
+            printf("%c", picture[i][j]);
+        }
         printf("\n");
     }
 }
 
-void rect(int r,int c,int h,int w)
-{
-    int i;
-
-    for(i=c;i<c+w;i++)
-    {
-        a[r][i]='*';
-        a[r+h-1][i]='*';
-    }
-
-    for(i=r;i<r+h;i++)
-    {
-        a[i][c]='*';
-        a[i][c+w-1]='*';
+void setPixel(int x, int y) {
+    /*
+        TODO:
+        If x and y are inside the canvas,
+        set picture[y][x] to PIXEL character '*'.
+    */
+    if (x >= 0 && x < WIDTH && y >= 0 && y < HEIGHT) {
+        picture[y][x] = PIXEL;
     }
 }
 
-void line(int r1,int c1,int r2,int c2)
-{
-    int i;
+void drawLine(int x1, int y1, int x2, int y2) {
+    /*
+        TODO:
+        Draw a line from (x1, y1) to (x2, y2)
+        using the '*' character.
+    */
+    int dx = abs(x2 - x1);
+    int dy = abs(y2 - y1);
 
-    if(r1==r2)
-    {
-        for(i=c1;i<=c2;i++)
-            a[r1][i]='*';
-    }
-    else if(c1==c2)
-    {
-        for(i=r1;i<=r2;i++)
-            a[i][c1]='*';
-    }
-}
+    int sx = (x1 < x2) ? 1 : -1;
+    int sy = (y1 < y2) ? 1 : -1;
 
-void tri(int r,int c,int h)
-{
-    int i;
+    int err = dx - dy;
 
-    for(i=0;i<h;i++)
-    {
-        a[r+i][c-i]='*';
-        a[r+i][c+i]='*';
-    }
+    while (1) {
+        setPixel(x1, y1);
 
-    for(i=c-h+1;i<=c+h-1;i++)
-        a[r+h-1][i]='*';
-}
+        if (x1 == x2 && y1 == y2)
+            break;
 
-void circle(int xc,int yc,int rad)
-{
-    int x,y,d;
+        int e2 = 2 * err;
 
-    for(x=0;x<R;x++)
-    {
-        for(y=0;y<C;y++)
-        {
-            d=(x-xc)*(x-xc)+(y-yc)*(y-yc);
+        if (e2 > -dy) {
+            err -= dy;
+            x1 += sx;
+        }
 
-            if(abs(d-rad*rad)<=rad)
-                a[x][y]='*';
+        if (e2 < dx) {
+            err += dx;
+            y1 += sy;
         }
     }
 }
 
-int main()
-{
-    int ch;
-    int r,c,h,w,rad;
-    int r1,c1,r2,c2;
+void drawRectangle(int x1, int y1, int x2, int y2) {
+    /*
+        TODO:
+        Draw a rectangle using four lines.
+        Top-left corner is (x1, y1).
+        Bottom-right corner is (x2, y2).
+    */
+    drawLine(x1, y1, x2, y1);
+    drawLine(x2, y1, x2, y2);
+    drawLine(x2, y2, x1, y2);
+    drawLine(x1, y2, x1, y1);
+}
 
-    clear();
+void drawCircle(int cx, int cy, int radius) {
+    /*
+        TODO:
+        Draw a circle with center (cx, cy)
+        and given radius using '*'.
+    */
+    int x, y;
 
-    do
-    {
-        printf("\n1.Rectangle");
-        printf("\n2.Line");
-        printf("\n3.Triangle");
-        printf("\n4.Circle");
-        printf("\n5.Display");
-        printf("\n6.Clear");
-        printf("\n0.Exit");
-        printf("\nEnter choice: ");
-        scanf("%d",&ch);
+    for (y = 0; y < HEIGHT; y++) {
+        for (x = 0; x < WIDTH; x++) {
 
-        switch(ch)
-        {
-            case 1:
-                printf("Row Col Height Width: ");
-                scanf("%d%d%d%d",&r,&c,&h,&w);
-                rect(r,c,h,w);
-                break;
+            int d = (x - cx) * (x - cx) +
+                    (y - cy) * (y - cy);
 
-            case 2:
-                printf("r1 c1 r2 c2: ");
-                scanf("%d%d%d%d",&r1,&c1,&r2,&c2);
-                line(r1,c1,r2,c2);
-                break;
-
-            case 3:
-                printf("Row Col Height: ");
-                scanf("%d%d%d",&r,&c,&h);
-                tri(r,c,h);
-                break;
-
-            case 4:
-                printf("CenterRow CenterCol Radius: ");
-                scanf("%d%d%d",&r,&c,&rad);
-                circle(r,c,rad);
-                break;
-
-            case 5:
-                show();
-                break;
-
-            case 6:
-                clear();
-                printf("Picture Cleared\n");
-                break;
-
-            case 0:
-                printf("Program Ended\n");
-                break;
-
-            default:
-                printf("Invalid Choice\n");
+            if (abs(d - radius * radius) <= radius) {
+                setPixel(x, y);
+            }
         }
-    
-    }while(ch!=0);
+    }
+}
+
+void drawTriangle(int x1, int y1, int x2, int y2, int x3, int y3) {
+    /*
+        TODO:
+        Draw a triangle by joining the three given points.
+    */
+    drawLine(x1, y1, x2, y2);
+    drawLine(x2, y2, x3, y3);
+    drawLine(x3, y3, x1, y1);
+}
+
+int main() {
+    int choice;
+
+    clearPicture();
+
+    printf("2D Graphics Editor\n");
+    printf("Canvas size: %d x %d\n", WIDTH, HEIGHT);
+    printf("Use coordinates x y.\n");
+    printf("x range: 0 to %d\n", WIDTH - 1);
+    printf("y range: 0 to %d\n", HEIGHT - 1);
+
+    while (1) {
+        printf("\nMenu\n");
+        printf("1. Draw Line\n");
+        printf("2. Draw Rectangle\n");
+        printf("3. Draw Circle\n");
+        printf("4. Draw Triangle\n");
+        printf("5. Display Picture\n");
+        printf("0. Exit\n");
+        printf("Enter choice: ");
+
+        scanf("%d", &choice);
+
+        if (choice == 1) {
+            int x1, y1, x2, y2;
+
+            printf("Enter x1 y1 x2 y2: ");
+            scanf("%d %d %d %d", &x1, &y1, &x2, &y2);
+
+            drawLine(x1, y1, x2, y2);
+        }
+        else if (choice == 2) {
+            int x1, y1, x2, y2;
+
+            printf("Enter top-left x y and bottom-right x y: ");
+            scanf("%d %d %d %d", &x1, &y1, &x2, &y2);
+
+            drawRectangle(x1, y1, x2, y2);
+        }
+        else if (choice == 3) {
+            int cx, cy, radius;
+
+            printf("Enter center x y and radius: ");
+            scanf("%d %d %d", &cx, &cy, &radius);
+
+            drawCircle(cx, cy, radius);
+        }
+        else if (choice == 4) {
+            int x1, y1, x2, y2, x3, y3;
+
+            printf("Enter x1 y1 x2 y2 x3 y3: ");
+            scanf("%d %d %d %d %d %d",
+                   &x1, &y1, &x2, &y2, &x3, &y3);
+
+            drawTriangle(x1, y1, x2, y2, x3, y3);
+        }
+        else if (choice == 5) {
+            printf("The picture is:\n");
+            displayPicture();
+        }
+        else if (choice == 0) {
+            printf("Exiting program.\n");
+            break;
+        }
+        else {
+            printf("Invalid choice.\n");
+        }
+    }
 
     return 0;
 }
