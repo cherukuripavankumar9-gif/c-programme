@@ -1,20 +1,51 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
 
 #define WIDTH 80
 #define HEIGHT 24
 
 #define EMPTY '_'
 #define PIXEL '*'
+#define MAX_OBJECTS 100
+
+typedef enum {
+    LINE = 1,
+    RECTANGLE,
+    CIRCLE,
+    TRIANGLE
+} ShapeType;
+
+typedef struct {
+    ShapeType type;
+    int valid;
+
+    union {
+        struct {
+            int x1, y1, x2, y2;
+        } line;
+
+        struct {
+            int x1, y1, x2, y2;
+        } rect;
+
+        struct {
+            int cx, cy, radius;
+        } circle;
+
+        struct {
+            int x1, y1, x2, y2, x3, y3;
+        } tri;
+
+    } data;
+
+} GraphicObject;
 
 char picture[HEIGHT][WIDTH];
+GraphicObject objects[MAX_OBJECTS];
+
+int objectCount = 0;
 
 void clearPicture() {
-    /*
-        TODO:
-        Fill the entire 2D array picture with EMPTY character '_'.
-    */
     int i, j;
 
     for (i = 0; i < HEIGHT; i++) {
@@ -25,10 +56,6 @@ void clearPicture() {
 }
 
 void displayPicture() {
-    /*
-        TODO:
-        Print the 2D picture array row by row.
-    */
     int i, j;
 
     for (i = 0; i < HEIGHT; i++) {
@@ -40,160 +67,319 @@ void displayPicture() {
 }
 
 void setPixel(int x, int y) {
-    /*
-        TODO:
-        If x and y are inside the canvas,
-        set picture[y][x] to PIXEL character '*'.
-    */
-    if (x >= 0 && x < WIDTH && y >= 0 && y < HEIGHT) {
-        picture[y][x] = PIXEL;
+
+    if (x < 0 || y < 0) {
+        return;
     }
+
+    if (x >= WIDTH || y >= HEIGHT) {
+        return;
+    }
+
+    picture[y][x] = PIXEL;
 }
 
 void drawLine(int x1, int y1, int x2, int y2) {
-    /*
-        TODO:
-        Draw a line from (x1, y1) to (x2, y2)
-        using the '*' character.
-    */
-    int dx = abs(x2 - x1);
-    int dy = abs(y2 - y1);
 
-    int sx = (x1 < x2) ? 1 : -1;
-    int sy = (y1 < y2) ? 1 : -1;
+    int dx = x2 - x1;
+    int dy = y2 - y1;
 
-    int err = dx - dy;
+    int steps;
 
-    while (1) {
-        setPixel(x1, y1);
+    if (abs(dx) > abs(dy)) {
+        steps = abs(dx);
+    } else {
+        steps = abs(dy);
+    }
 
-        if (x1 == x2 && y1 == y2)
-            break;
+    float xincrement = (float)dx / steps;
+    float yincrement = (float)dy / steps;
 
-        int e2 = 2 * err;
+    float x = x1;
+    float y = y1;
 
-        if (e2 > -dy) {
-            err -= dy;
-            x1 += sx;
-        }
+    int i;
 
-        if (e2 < dx) {
-            err += dx;
-            y1 += sy;
-        }
+    for (i = 0; i <= steps; i++) {
+
+        setPixel((int)(x + 0.5), (int)(y + 0.5));
+
+        x = x + xincrement;
+        y = y + yincrement;
     }
 }
 
 void drawRectangle(int x1, int y1, int x2, int y2) {
-    /*
-        TODO:
-        Draw a rectangle using four lines.
-        Top-left corner is (x1, y1).
-        Bottom-right corner is (x2, y2).
-    */
+
     drawLine(x1, y1, x2, y1);
+
     drawLine(x2, y1, x2, y2);
+
     drawLine(x2, y2, x1, y2);
+
     drawLine(x1, y2, x1, y1);
 }
 
 void drawCircle(int cx, int cy, int radius) {
-    /*
-        TODO:
-        Draw a circle with center (cx, cy)
-        and given radius using '*'.
-    */
-    int x, y;
 
-    for (y = 0; y < HEIGHT; y++) {
-        for (x = 0; x < WIDTH; x++) {
+    int x = 0;
+    int y = radius;
 
-            int d = (x - cx) * (x - cx) +
-                    (y - cy) * (y - cy);
+    int p = 3 - (2 * radius);
 
-            if (abs(d - radius * radius) <= radius) {
-                setPixel(x, y);
-            }
+    while (x <= y) {
+
+        setPixel(cx + x, cy + y);
+        setPixel(cx - x, cy + y);
+        setPixel(cx + x, cy - y);
+        setPixel(cx - x, cy - y);
+
+        setPixel(cx + y, cy + x);
+        setPixel(cx - y, cy + x);
+        setPixel(cx + y, cy - x);
+        setPixel(cx - y, cy - x);
+
+        if (p < 0) {
+            p = p + (4 * x) + 6;
+        }
+        else {
+            p = p + 4 * (x - y) + 10;
+            y--;
+        }
+
+        x++;
+    }
+}
+
+void drawTriangle(int x1, int y1,
+                  int x2, int y2,
+                  int x3, int y3) {
+
+    drawLine(x1, y1, x2, y2);
+
+    drawLine(x2, y2, x3, y3);
+
+    drawLine(x3, y3, x1, y1);
+}
+
+void renderAllObjects() {
+
+    clearPicture();
+
+    int i;
+
+    for (i = 0; i < objectCount; i++) {
+
+        if (objects[i].valid == 0) {
+            continue;
+        }
+
+        switch (objects[i].type) {
+
+            case LINE:
+
+                drawLine(
+                    objects[i].data.line.x1,
+                    objects[i].data.line.y1,
+                    objects[i].data.line.x2,
+                    objects[i].data.line.y2
+                );
+
+                break;
+
+            case RECTANGLE:
+
+                drawRectangle(
+                    objects[i].data.rect.x1,
+                    objects[i].data.rect.y1,
+                    objects[i].data.rect.x2,
+                    objects[i].data.rect.y2
+                );
+
+                break;
+
+            case CIRCLE:
+
+                drawCircle(
+                    objects[i].data.circle.cx,
+                    objects[i].data.circle.cy,
+                    objects[i].data.circle.radius
+                );
+
+                break;
+
+            case TRIANGLE:
+
+                drawTriangle(
+                    objects[i].data.tri.x1,
+                    objects[i].data.tri.y1,
+                    objects[i].data.tri.x2,
+                    objects[i].data.tri.y2,
+                    objects[i].data.tri.x3,
+                    objects[i].data.tri.y3
+                );
+
+                break;
         }
     }
 }
 
-void drawTriangle(int x1, int y1, int x2, int y2, int x3, int y3) {
-    /*
-        TODO:
-        Draw a triangle by joining the three given points.
-    */
-    drawLine(x1, y1, x2, y2);
-    drawLine(x2, y2, x3, y3);
-    drawLine(x3, y3, x1, y1);
-}
-
 int main() {
+
     int choice;
 
     clearPicture();
 
-    printf("2D Graphics Editor\n");
-    printf("Canvas size: %d x %d\n", WIDTH, HEIGHT);
-    printf("Use coordinates x y.\n");
-    printf("x range: 0 to %d\n", WIDTH - 1);
-    printf("y range: 0 to %d\n", HEIGHT - 1);
-
     while (1) {
-        printf("\nMenu\n");
-        printf("1. Draw Line\n");
-        printf("2. Draw Rectangle\n");
-        printf("3. Draw Circle\n");
-        printf("4. Draw Triangle\n");
-        printf("5. Display Picture\n");
+
+        printf("2D Graphics Editor\n");
+        printf("Canvas size: %d x %d\n", WIDTH, HEIGHT);
+
+        printf("1. Add object\n");
+        printf("2. Delete object\n");
+        printf("3. Modify object\n");
+        printf("4. Display picture\n");
+        printf("5. List objects\n");
         printf("0. Exit\n");
+
         printf("Enter choice: ");
 
-        scanf("%d", &choice);
-
-        if (choice == 1) {
-            int x1, y1, x2, y2;
-
-            printf("Enter x1 y1 x2 y2: ");
-            scanf("%d %d %d %d", &x1, &y1, &x2, &y2);
-
-            drawLine(x1, y1, x2, y2);
-        }
-        else if (choice == 2) {
-            int x1, y1, x2, y2;
-
-            printf("Enter top-left x y and bottom-right x y: ");
-            scanf("%d %d %d %d", &x1, &y1, &x2, &y2);
-
-            drawRectangle(x1, y1, x2, y2);
-        }
-        else if (choice == 3) {
-            int cx, cy, radius;
-
-            printf("Enter center x y and radius: ");
-            scanf("%d %d %d", &cx, &cy, &radius);
-
-            drawCircle(cx, cy, radius);
-        }
-        else if (choice == 4) {
-            int x1, y1, x2, y2, x3, y3;
-
-            printf("Enter x1 y1 x2 y2 x3 y3: ");
-            scanf("%d %d %d %d %d %d",
-                   &x1, &y1, &x2, &y2, &x3, &y3);
-
-            drawTriangle(x1, y1, x2, y2, x3, y3);
-        }
-        else if (choice == 5) {
-            printf("The picture is:\n");
-            displayPicture();
-        }
-        else if (choice == 0) {
-            printf("Exiting program.\n");
+        if (scanf("%d", &choice) != 1) {
             break;
         }
+
+        if (choice == 1) {
+
+            int shapeType;
+
+            printf("Choose shape type:\n");
+            printf("1. Line\n");
+            printf("2. Rectangle\n");
+            printf("3. Circle\n");
+            printf("4. Triangle\n");
+
+            printf("Enter shape type: ");
+
+            scanf("%d", &shapeType);
+
+            if (shapeType == 1) {
+
+                printf("Enter x1 y1 x2 y2: ");
+
+                scanf("%d %d %d %d",
+                      &objects[objectCount].data.line.x1,
+                      &objects[objectCount].data.line.y1,
+                      &objects[objectCount].data.line.x2,
+                      &objects[objectCount].data.line.y2);
+
+                objects[objectCount].type = LINE;
+                objects[objectCount].valid = 1;
+
+                printf("Object added with index %d.\n\n", objectCount);
+
+                objectCount++;
+            }
+
+            else if (shapeType == 2) {
+
+                printf("Enter top-left x y and bottom-right x y: ");
+
+                scanf("%d %d %d %d",
+                      &objects[objectCount].data.rect.x1,
+                      &objects[objectCount].data.rect.y1,
+                      &objects[objectCount].data.rect.x2,
+                      &objects[objectCount].data.rect.y2);
+
+                objects[objectCount].type = RECTANGLE;
+                objects[objectCount].valid = 1;
+
+                printf("Object added with index %d.\n\n", objectCount);
+
+                objectCount++;
+            }
+
+            else if (shapeType == 3) {
+
+                printf("Enter center x y and radius: ");
+
+                scanf("%d %d %d",
+                      &objects[objectCount].data.circle.cx,
+                      &objects[objectCount].data.circle.cy,
+                      &objects[objectCount].data.circle.radius);
+
+                objects[objectCount].type = CIRCLE;
+                objects[objectCount].valid = 1;
+
+                printf("Object added with index %d.\n\n", objectCount);
+
+                objectCount++;
+            }
+
+            else if (shapeType == 4) {
+
+                printf("Enter x1 y1 x2 y2 x3 y3: ");
+
+                scanf("%d %d %d %d %d %d",
+                      &objects[objectCount].data.tri.x1,
+                      &objects[objectCount].data.tri.y1,
+                      &objects[objectCount].data.tri.x2,
+                      &objects[objectCount].data.tri.y2,
+                      &objects[objectCount].data.tri.x3,
+                      &objects[objectCount].data.tri.y3);
+
+                objects[objectCount].type = TRIANGLE;
+                objects[objectCount].valid = 1;
+
+                printf("Object added with index %d.\n\n", objectCount);
+
+                objectCount++;
+            }
+        }
+
+        else if (choice == 2) {
+
+            int index;
+
+            printf("Enter object index to delete: ");
+
+            scanf("%d", &index);
+
+            if (index >= 0 && index < objectCount) {
+                objects[index].valid = 0;
+            }
+
+            printf("\n");
+        }
+
+        else if (choice == 3) {
+
+            printf("\n");
+        }
+
+        else if (choice == 4) {
+
+            renderAllObjects();
+
+            displayPicture();
+
+            printf("\n");
+        }
+
+        else if (choice == 5) {
+
+            printf("\n");
+        }
+
+        else if (choice == 0) {
+
+            printf("Goodbye.\n");
+
+            break;
+        }
+
         else {
-            printf("Invalid choice.\n");
+
+            printf("Invalid choice.\n\n");
         }
     }
 
