@@ -1,18 +1,71 @@
- Prompt for Generating the Program
 
-Develop a menu-driven graphics drawing application in C that simulates a basic computer graphics environment using a 2D character matrix. The drawing canvas should consist of 20 rows and 40 columns and be represented using a two-dimensional character array.
-
-The application must provide the following functionalities:
-
-1. Initialize and clear the drawing canvas with a default background character ('_').
-2. Display the current contents of the canvas on the console.
-3. Draw a rectangle by accepting the top-left coordinate, height, and width as input.
-4. Draw horizontal and vertical lines by specifying the starting and ending coordinates.
-5. Draw an isosceles triangle by providing the apex position and height.
-6. Draw a circle using the center coordinates and radius based on a mathematical distance calculation.
-7. Implement a user-friendly menu interface that allows repeated drawing operations until the user selects the exit option.
-8. Use modular programming principles by implementing separate functions for each drawing operation.
-9. Store all graphical objects directly in the character matrix and render them using the '*' symbol.
-10. Ensure efficient memory usage and maintain clear program structure with appropriate comments.
-
-The final output should visually display the shapes within the character grid, allowing multiple shapes to coexist on the same canvas until it is cleared.
+> **Prompt:**
+>
+> Develop a complete menu-driven 2D Graphics Editor in C language that simulates basic computer graphics on a text-based canvas. The application should use Object-Oriented style design with structures, unions, enums, and arrays to manage graphical objects.
+>
+> The canvas size should be 80 columns × 24 rows and initially filled with '_' characters. Draw all graphical elements using '*' characters.
+>
+> ### Functional Requirements:
+>
+> 1. **Shape Support**
+>
+>    * Line
+>    * Rectangle
+>    * Circle
+>    * Triangle
+> 2. **Data Structures**
+>
+>    * Use an enum to identify object types.
+>    * Use a union inside a structure to store shape-specific parameters.
+>    * Maintain an array capable of storing 100 graphical objects.
+>    * Each object should have a validity flag for deletion management.
+> 3. **Drawing Algorithms**
+>
+>    * Implement the DDA Line Drawing Algorithm.
+>    * Implement the Midpoint Circle Drawing Algorithm.
+>    * Draw rectangles using four lines.
+>    * Draw triangles using three lines.
+> 4. **Menu Operations**
+>
+>    * Add Object
+>    * Delete Object
+>    * Modify Existing Object
+>    * Display Canvas
+>    * List All Objects
+>    * Clear Canvas
+>    * Exit Program
+> 5. **Object Management**
+>
+>    * Assign a unique index to every object.
+>    * Allow deletion by object index.
+>    * Allow modification of shape parameters.
+>    * Display all object details with their indices.
+> 6. **Rendering**
+>
+>    * Clear the canvas before each redraw.
+>    * Render all valid objects sequentially.
+>    * Prevent drawing outside canvas boundaries.
+> 7. **Programming Requirements**
+>
+>    * Use only standard C libraries.
+>    * Follow modular programming principles.
+>    * Include proper comments for every function.
+>    * Handle invalid user inputs gracefully.
+>
+> ### Additional Features (Bonus)
+>
+> * Move objects.
+> * Resize shapes.
+> * Save drawing to a text file.
+> * Load drawing from a text file.
+> * Undo last operation.
+> * Multiple canvas sizes.
+> * Filled rectangles and filled circles.
+>
+> ### Expected Learning Outcomes
+>
+> * Understanding of structures, unions, and enums.
+> * Implementation of graphics drawing algorithms.
+> * Object management using arrays.
+> * Menu-driven programming in C.
+> * Basic computer graphics concepts.
